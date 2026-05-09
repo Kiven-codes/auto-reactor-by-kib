@@ -1,0 +1,59 @@
+{
+  "manifest_version": 3,
+  "name": "Auto-Reactor",
+  "version": "1.0.0",
+  "description": "Intelligent response automation for Google Meet & Classroom - Automatically respond to attention checks with customizable messages and emoji reactions",
+  
+  "permissions": [
+    "tabs",
+    "scripting",
+    "webRequest",
+    "activeTab",
+    "storage"
+  ],
+  
+  "host_permissions": [
+    "https://meet.google.com/*",
+    "https://classroom.google.com/*"
+  ],
+  
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Auto-Reactor - Automatic response automation for Google Meet",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  
+  "background": {
+    "service_worker": "background.js"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["content-meet.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://classroom.google.com/*"],
+      "js": ["content-classroom.js"],
+      "run_at": "document_start"
+    }
+  ],
+  
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  
+  "web_accessible_resources": [
+    {
+      "resources": ["app.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

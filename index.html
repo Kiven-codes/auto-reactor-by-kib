@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Reactor for Google Meet/Classroom</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container-fluid min-vh-100 d-flex flex-column">
+        <!-- Header -->
+        <header class="navbar-section py-4 border-bottom border-dark">
+            <div class="container-lg">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="logo-section">
+                        <h1 class="brand-title">
+                            <i class="fas fa-microphone-alt"></i> Auto-Reactor
+                        </h1>
+                        <p class="brand-subtitle">Intelligent response automation for Google Meet & Classroom</p>
+                    </div>
+                    <div class="status-indicator">
+                        <div class="pulse-ring" id="pulseIndicator"></div>
+                        <span id="statusText" class="status-badge">Inactive</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow-1 py-5">
+            <div class="container-lg">
+                <div class="row g-4">
+                    <!-- Control Panel -->
+                    <div class="col-lg-5">
+                        <div class="card control-card shadow-lg">
+                            <div class="card-header bg-gradient">
+                                <h2 class="card-title mb-0">
+                                    <i class="fas fa-sliders-h"></i> Control Panel
+                                </h2>
+                            </div>
+                            <div class="card-body p-4">
+                                <!-- Master Toggle -->
+                                <div class="control-group mb-4">
+                                    <label class="control-label">Activation Status</label>
+                                    <div class="toggle-wrapper">
+                                        <input type="checkbox" id="masterToggle" class="toggle-input">
+                                        <label for="masterToggle" class="toggle-label">
+                                            <span class="toggle-text">Enable Auto-Reactor</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- API Configuration -->
+                                <div class="control-group mb-4">
+                                    <label for="geminiApiKey" class="form-label">Gemini API Key (Optional)</label>
+                                    <input type="password" class="form-control input-styled" id="geminiApiKey" 
+                                           placeholder="Enter your Gemini API key">
+                                    <small class="form-text">For enhanced intent analysis. Leave blank to use Web Speech API.</small>
+                                </div>
+
+                                <!-- Speech Recognition Toggle -->
+                                <div class="control-group mb-4">
+                                    <label class="control-label">Recognition Mode</label>
+                                    <div class="mode-buttons">
+                                        <button type="button" class="btn btn-outline-primary mode-btn active" data-mode="web-speech">
+                                            <i class="fas fa-brain"></i> Web Speech API
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary mode-btn" data-mode="gemini">
+                                            <i class="fas fa-sparkles"></i> Gemini API
+                                        </button>
+                                    </div>
+                                    <small class="form-text d-block mt-2">Web Speech is instant; Gemini is more accurate (requires API key).</small>
+                                </div>
+
+                                <!-- Chat Response -->
+                                <div class="control-group mb-4">
+                                    <label for="customResponse" class="form-label">Auto-Response Message</label>
+                                    <textarea class="form-control input-styled" id="customResponse" rows="3" 
+                                              placeholder="Yes, I'm here!">Yes, I'm here!</textarea>
+                                    <small class="form-text">This message will be sent to the chat when a trigger is detected.</small>
+                                </div>
+
+                                <!-- Emoji Reaction Toggle -->
+                                <div class="control-group mb-4">
+                                    <label class="control-label">Auto-Emoji Reaction</label>
+                                    <div class="emoji-selector">
+                                        <input type="checkbox" id="emojiToggle" class="toggle-input">
+                                        <label for="emojiToggle" class="toggle-label">
+                                            <span class="toggle-text">Send emoji reaction</span>
+                                        </label>
+                                    </div>
+                                    <select class="form-select input-styled mt-2" id="emojiSelect" disabled>
+                                        <option value="❤️">❤️ Heart</option>
+                                        <option value="👍">👍 Thumbs Up</option>
+                                        <option value="😊">😊 Smiling Face</option>
+                                        <option value="✋">✋ Raise Hand</option>
+                                        <option value="👏">👏 Clapping Hands</option>
+                                    </select>
+                                </div>
+
+                                <!-- Sensitivity Slider -->
+                                <div class="control-group mb-4">
+                                    <label for="sensitivitySlider" class="form-label">Recognition Sensitivity</label>
+                                    <input type="range" class="form-range input-styled" id="sensitivitySlider" 
+                                           min="0.3" max="1" step="0.1" value="0.7">
+                                    <small class="form-text">Higher = more sensitive to speech variations</small>
+                                </div>
+
+                                <!-- Trigger Phrases Editor -->
+                                <div class="control-group">
+                                    <label class="form-label">Trigger Phrases</label>
+                                    <div class="trigger-list" id="triggerList">
+                                        <div class="trigger-item">
+                                            <input type="text" class="form-control input-styled trigger-input" 
+                                                   value="Are you still there?" readonly>
+                                        </div>
+                                        <div class="trigger-item">
+                                            <input type="text" class="form-control input-styled trigger-input" 
+                                                   value="Andiyan pa ba kayo?" readonly>
+                                        </div>
+                                        <div class="trigger-item">
+                                            <input type="text" class="form-control input-styled trigger-input" 
+                                                   value="Are you there?" readonly>
+                                        </div>
+                                        <div class="trigger-item">
+                                            <input type="text" class="form-control input-styled trigger-input" 
+                                                   value="Hello" readonly>
+                                        </div>
+                                        <div class="trigger-item">
+                                            <input type="text" class="form-control input-styled trigger-input" 
+                                                   value="Hi there" readonly>
+                                        </div>
+                                    </div>
+                                    <small class="form-text d-block mt-2">Core phrases are locked. Add custom ones below.</small>
+                                    <div class="input-group mt-3">
+                                        <input type="text" class="form-control input-styled" id="newTriggerInput" 
+                                               placeholder="Add a new trigger phrase">
+                                        <button class="btn btn-primary btn-sm" id="addTriggerBtn">
+                                            <i class="fas fa-plus"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monitoring & Logs -->
+                    <div class="col-lg-7">
+                        <!-- Activity Monitor -->
+                        <div class="card monitor-card shadow-lg mb-4">
+                            <div class="card-header bg-gradient">
+                                <h2 class="card-title mb-0">
+                                    <i class="fas fa-chart-line"></i> Activity Monitor
+                                </h2>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="monitor-grid">
+                                    <div class="monitor-stat">
+                                        <div class="stat-label">Detections</div>
+                                        <div class="stat-value" id="detectionCount">0</div>
+                                    </div>
+                                    <div class="monitor-stat">
+                                        <div class="stat-label">Responses Sent</div>
+                                        <div class="stat-value" id="responseCount">0</div>
+                                    </div>
+                                    <div class="monitor-stat">
+                                        <div class="stat-label">Session Duration</div>
+                                        <div class="stat-value" id="sessionDuration">00:00</div>
+                                    </div>
+                                    <div class="monitor-stat">
+                                        <div class="stat-label">Accuracy</div>
+                                        <div class="stat-value" id="accuracyRate">--</div>
+                                    </div>
+                                </div>
+
+                                <!-- Real-time Waveform -->
+                                <div class="audio-visualizer mt-4 p-3 rounded" id="audioVisualizer">
+                                    <canvas id="waveformCanvas" width="100%" height="60"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity Log -->
+                        <div class="card log-card shadow-lg">
+                            <div class="card-header bg-gradient">
+                                <h2 class="card-title mb-0">
+                                    <i class="fas fa-list"></i> Activity Log
+                                </h2>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="log-container" id="activityLog">
+                                    <div class="log-entry log-placeholder">
+                                        <div class="log-timestamp">--:--:--</div>
+                                        <div class="log-message">Waiting for audio input...</div>
+                                        <div class="log-badge">Idle</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-light text-center">
+                                <button class="btn btn-sm btn-outline-secondary" id="clearLogsBtn">
+                                    <i class="fas fa-trash"></i> Clear Logs
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-top border-dark py-3 mt-auto">
+            <div class="container-lg text-center text-muted small">
+                <p>Auto-Reactor v1.0 | Made for Google Meet & Classroom | 
+                   <a href="#" class="text-reset">Documentation</a> | 
+                   <a href="#" class="text-reset">Report Issue</a>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Alert Modal for Important Messages -->
+    <div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-3">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="alertModalLabel">Notification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="alertModalBody">
+                    Message here
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
